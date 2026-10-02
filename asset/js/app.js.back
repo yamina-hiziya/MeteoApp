@@ -1,0 +1,518 @@
+// //attendre que la page soit chargée
+// document.addEventListener('DOMContentLoaded', function () {
+//     //récupérer les élements du formulaire
+//     const villeInput = document.getElementById('ville');
+//     const rechercherButton = document.getElementById('rechercher');
+//     const chargementDiv = document.getElementById('chargement');
+//     const erreurDiv = document.getElementById('erreur');
+//     const meteoDiv = document.getElementById('meteo');
+//     const nomVilleElement = document.getElementById('nomVille');
+//     const temperatureElement = document.getElementById('temperature');
+//     const descriptionElement = document.getElementById('description');
+//     const ressentiElement = document.getElementById('ressenti');
+//     const humiditeElement = document.getElementById('humidite');
+//     const ventElement = document.getElementById('vent');
+//     const iconElement = document.getElementById('icon');
+
+//     //Clé API (normalement, elle devrait être sécurisée côté serveur)
+//     // Utilisez votre propre clé en vous inscrivant sur OpenWeatherMap
+//     const API_KEY = "1dd47aed5606521d9f956f53d0d149fd"; // Remplacez par votre clé
+
+//         // Fonction pour définir l'image de fond en fonction des conditions météo
+//         function definirArrierePlan(conditionCode, heure){
+//             // Déterminer s'il fait jour ou nuit (simplifié)
+//             const estJour = heure >= 6 && heure <= 18;
+
+//             // Définir l'image de fond en fonction du code de condition météo
+//             // Groupes selon la documentation d'OpenWeatherMap: https://openweathermap.org/weather-conditions
+
+//             // Images d'arrière-plan pour différentes conditions météo
+//             let backgroundImage = '/api/placeholder/1920/1080';
+
+//             // Groupe 2xx: Orages
+//             if(conditionCode >= 200 && conditionCode < 300){
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Orage-Jour' :
+//             '/api/placeholder/1920/1080?text=Orage-Nuit';
+//             }
+//             // Groupe 3xx: Bruine
+//             else if(conditionCode >= 300 && conditionCode < 400){
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Bruine-Jour' :
+//             '/api/placeholder/1920/1080?text=Bruine-Nuit';
+//             }
+//             // Groupe 5xx: Pluie
+//             else if(conditionCode >= 500 && conditionCode < 600){
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Pluie-Jour' :
+//             '/api/placeholder/1920/1080?text=Pluie-Nuit';
+//             }
+//             // Groupe 6xx: Neige
+//             else if(conditionCode >= 600 && conditionCode < 700){
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Neige-Jour' :
+//             '/api/placeholder/1920/1080?text=Neige-Nuit';
+//             }
+//             // Groupe 7xx: Atmosphère (brume, brouillard, etc.)
+//             else if (conditionCode >= 700 && conditionCode < 800) {
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Brume-Jour' :
+//             '/api/placeholder/1920/1080?text=Brume-Nuit';
+//             }
+//             // Code 800: Ciel dégagé
+//             else if (conditionCode === 800) {
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Ensoleillé' :
+//             '/api/placeholder/1920/1080?text=Nuit-Claire';
+//             }
+//             // Groupe 80x: Nuages
+//             else if (conditionCode > 800 && conditionCode < 900) {
+//             backgroundImage = estJour ?
+//             '/api/placeholder/1920/1080?text=Nuageux-Jour' :
+//             '/api/placeholder/1920/1080?text=Nuageux-Nuit';
+//             }
+//             //Appliquer l'image
+//             document.body.style.backgroundImage = `url('${backgroundImage}')`;
+//             }
+
+//         //Fonction afficher message d'erreur
+//         function afficherErreur (message){
+//         erreurDiv.textContent = message;
+//         erreurDiv.style.display = 'block';
+//         meteoDiv.style.display = 'none';
+//         chargementDiv.style.display = 'none';
+//         }
+
+//         //Fonction pour récupérer et afficher la météo
+
+//             async function recupererMeteo(ville) {
+//                 //réinitialiser l'affichage
+//                 erreurDiv.style.display = 'none';
+//                 meteoDiv.style.display = 'none';
+//                 chargementDiv.style.display = 'block';
+
+//                 try {
+//                 //construire l'URL de l'API avec la ville et la clé
+//                     const url = `https://api.openweathermap.org/data/2.5/weather?q=${ville}&appid=${API_KEY}&units=metric&lang=fr`;
+
+//                     console.log(`récupération de la météo pour: ${ville}`);
+
+//                     //faire la requête API
+//                     const response = await fetch(url);
+
+//                     //vérifier si la requête a réussi
+//                     if (!response.ok) {
+//                         //si le status est 404, la ville n'a pas été trouvée
+//                         if (response.status === 404) {
+//                             throw new Error(`La ville " ${ville}" n'a pas été trouvée.`);
+//                         } else {
+//                             throw new Error(`Erreur ${response.status}: ${response.status.text}`);
+//                         }
+//                     }
+//                     //convertir la reponse en JSON
+//                     const donnees = await response.json();
+//                     console.log("Données météo reçues", donnees);
+
+//                     //mettre a jour l'interface avec les données reçues
+//                     nomVilleElement.textContent = donnees.name;
+//                     temperatureElement.textContent = `${Math.round(donnees.main.temp)}°C`;
+
+//                     //premiere Lettre en majuscule pour la description 
+//                     const description = donnees.weather[0].description;
+//                     descriptionElement.textContent = description.charAt(0).toUpperCase() + description.slice(1);
+
+//                     ressentiElement.textContent = `${math.round(donnees.main.feels_like)}°C`;
+//                     humiditeElement.textContent = `{donnees.main.humidity}%`;
+//                     ventElement.textContent = `{math.round(donnees.wind.speed * 3.6)} km/h`;// convertir de m/s en km/h
+//                     //ajouter l'icone meteo
+//                     const weatherIcon = donnees.weather[0].icon;
+//                     iconElement.innerHtml = `<img src="https://openweathermap.org/img/wn/${weatherIcon}@2x.png" alt="${description}">`;
+
+//                     //definir l'arrière-plan en fonction de la météo
+//                     //obtenir l'heure locale de l'utulisateur pour déterminer jour/nuit
+//                     const heureLocale = new Date().getHours();
+//                     definirArrierePlan(donnees.weather[0].id, heureLocale);
+
+//                     //afficher le bloc meteo
+//                     meteoDiv.style.display = 'block';
+//                     chargementDiv.style.display = 'none';
+//                     }catch(erreur){
+//                     console.error("Erreur lors de la récuperation de la météo:", erreur);
+//                     afficherErreur(erreur.message);
+//                     }
+// //              //afficher le bloc meteo
+//                 // try {
+//                 // meteoDiv.style.display = 'block';
+//                 // chargementDiv.style.display = 'none';
+//                 // } catch(erreur) {
+//                 //     console.error("Erreur lors de la récupération de la météo:", erreur);
+//                 //     afficherErreur(erreur.message);
+//                 // }
+//             }
+//             //gerer le click sur le bouton de recherche
+//             rechercherButton.addEventListener('click', function() {
+//                 const ville = villeInput.value.trim();
+//                 if (ville === '') {
+//                     afficherErreur('veuillez entrer le nom d\'une ville.');
+//                     return;
+//                 }
+//                 recupererMeteo(ville);
+//             });
+
+//             // Gérer l'appui sur Entrée dans le champ de recherche
+//                 villeInput.addEventListener('keypress', function(event){
+//                 if(event.key === 'Enter'){
+//                 rechercherButton.click();
+//                 }
+//             });
+
+//             // Charger la météo de Lille par défaut (si le champ n'est pas vide)
+//             if(villeInput.value.trim() === ''){
+//             recupererMeteo(villeInput.value.trim());
+//             }
+//         });
+
+// // Attendre que la page soit chargée
+// document.addEventListener('DOMContentLoaded', function () {
+
+//     // Éléments du DOM
+//     const villeInput = document.getElementById('ville');
+//     const rechercherButton = document.getElementById('rechercher');
+//     const chargementDiv = document.getElementById('chargement');
+//     const erreurDiv = document.getElementById('erreur');
+//     const meteoDiv = document.getElementById('meteo');
+//     const nomVilleElement = document.getElementById('nomVille');
+//     const temperatureElement = document.getElementById('temperature');
+//     const descriptionElement = document.getElementById('description');
+//     const ressentiElement = document.getElementById('ressenti');
+//     const humiditeElement = document.getElementById('humidite');
+//     const ventElement = document.getElementById('vent');
+//     const iconElement = document.getElementById('icon');
+
+
+//     // Clé API (normalement, elle devrait être sécurisée côté serveur)
+//     // Utilisez votre propre clé en vous inscrivant sur OpenWeatherMap
+//     const API_KEY = "7695384f7f23b5267e11183b9cf51fdb"; // Remplacez par votre clé
+
+//     // Fonction pour définir l'image de fond en fonction des conditions météo
+//     function definirArrierePlan(conditionCode, heure) {
+//         // Déterminer s'il fait jour ou nuit (simplifié)
+//         const estJour = heure >= 6 && heure <= 18;
+
+//         // Définir l'image de fond en fonction du code de condition météo
+//         // Groupes selon la documentation d'OpenWeatherMap: https://openweathermap.org/weather-conditions
+
+//         // Images d'arrière-plan pour différentes conditions météo
+//         let backgroundImage = '/api/placeholder/1920/1080';
+
+//         // Groupe 2xx: Orages
+//         if (conditionCode >= 200 && conditionCode < 300) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Orage-Jour' :
+//                 '/api/placeholder/1920/1080?text=Orage-Nuit';
+//         }
+//         // Groupe 3xx: Bruine
+//         else if (conditionCode >= 300 && conditionCode < 400) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Bruine-Jour' :
+//                 '/api/placeholder/1920/1080?text=Bruine-Nuit';
+//         }
+//         // Groupe 5xx: Pluie
+//         else if (conditionCode >= 500 && conditionCode < 600) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Pluie-Jour' :
+//                 '/api/placeholder/1920/1080?text=Pluie-Nuit';
+//         }
+//         // Groupe 6xx: Neige
+//         else if (conditionCode >= 600 && conditionCode < 700) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Neige-Jour' :
+//                 '/api/placeholder/1920/1080?text=Neige-Nuit';
+//         }
+//         // Groupe 7xx: Atmosphère (brume, brouillard, etc.)
+//         else if (conditionCode >= 700 && conditionCode < 800) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Brume-Jour' :
+//                 '/api/placeholder/1920/1080?text=Brume-Nuit';
+//         }
+//         // Code 800: Ciel dégagé
+//         else if (conditionCode === 800) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Ensoleillé' :
+//                 '/api/placeholder/1920/1080?text=Nuit-Claire';
+//         }
+//         // Groupe 80x: Nuages
+//         else if (conditionCode > 800 && conditionCode < 900) {
+//             backgroundImage = estJour ?
+//                 '/api/placeholder/1920/1080?text=Nuageux-Jour' :
+//                 '/api/placeholder/1920/1080?text=Nuageux-Nuit';
+//         }
+//         //Appliquer l'image
+//         document.body.style.backgroundImage = `url('${backgroundImage}')`;
+//     }
+
+//     //Fonction afficher message d'erreur
+//     function afficherErreur(message) {
+//         erreurDiv.textContent = message;
+//         erreurDiv.style.display = 'block';
+//         meteoDiv.style.display = 'none';
+//         chargementDiv.style.display = 'none';
+//     }
+
+//     //Fonction pour récupérer et afficher la météo
+
+//     async function recupereMeteo(ville) {
+//         //Réinitialiser l'affichage
+//         erreurDiv.style.display = 'none';
+//         meteoDiv.style.display = 'none';
+//         chargementDiv.style.display = 'block';
+
+//         try {
+//             //Construire l'URL de l'API avec la ville et la clé
+//             const url = `https://api.openweathermap.org/data/2.5/weather?q=${ville}&appid=${API_KEY}&units=metric&lang=fr`;
+
+//             console.log(`Récupération de la météo pour: ${ville}`);
+
+//             //Faire la requête API
+//             const response = await fetch(url);
+
+//             //vérifier si la requête a réussi
+//             if (!response.ok) {
+//                 //Si le status est 404, la ville n'a pas été trouvée
+//                 if (response.status === 404) {
+//                     throw new Error(`La ville "${ville}" n'a pas été trouvée.`);
+//                 } else {
+//                     throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+//                 }
+//             }
+//             //Convertir la reponse en JSON
+//             const donnees = await response.json();
+//             console.log("Données météo reçues", donnees);
+
+//             //Mettre à jour l'interface avec les données reçues
+//             nomVilleElement.textContent = donnees.name;
+//             temperatureElement.textContent = `${Math.round(donnees.main.temp)}°C`;
+
+//             // Première lettre en majuscule pour la description
+//             const description = donnees.weather[0].description;
+//             descriptionElement.textContent = description.charAt(0).toUpperCase() + description.slice(1);
+
+
+//             ressentiElement.textContent = `${Math.round(donnees.main.feels_like)}°C`;
+//             humiditeElement.textContent = `${donnees.main.humidity}%`;
+//             ventElement.textContent = `${Math.round(donnees.wind.speed * 3.6)} km/h`; // Conversion de m/s en km/h
+
+//             //afficher le bloc météo
+//             meteoDiv.style.display = ' block';
+//             chargementDiv.style.display = 'none';
+
+//         } catch {
+//             console.error("Erreur lors de la récupération de la météo:", erreur);
+//             afficherErreur(erreur.message);
+//         }
+//     }
+
+//     //Gérer le click sur le bouton de recherche
+//     rechercherButton.addEventListener('click', function () {
+//         const ville = villeInput.value.trim();
+
+//         if (ville === '') {
+//             afficherErreur('Veuillez entrer le nom d\'une ville.');
+//             return;
+//         }
+//         recupereMeteo(ville);
+//     });
+
+//     // Gérer l'appui sur Entrée dans le champ de recherche
+//     villeInput.addEventListener('keypress', function (event) {
+//         if (event.key === 'Enter') {
+//             rechercherButton.click();
+//         }
+//     });
+
+//     // Charger la météo de Lille par défaut (si le champ n'est pas vide)
+//     if (villeInput.value.trim() === '') {
+//         recupereMeteo(villeInput.value.trim());
+//     }
+
+// });
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:27
+// // // Images d'arrière-plan pour différentes conditions météo
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:28
+// // // Groupe 2xx: Orages
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:28
+// // // Groupe 3xx: Bruine
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:29
+// // // Groupe 5xx: Pluie
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:29
+// // // Groupe 6xx: Neige
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:29
+// // // Groupe 7xx: Atmosphère (brume, brouillard, etc.)
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:29
+// // // Code 800: Ciel dégagé
+
+// // Yamina BENABDELMOUMENE
+// // 11:29
+// // et sa on met sa ou? g pa tou compri
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:30
+// // // Groupe 80x: Nuages
+
+// // Christian LOHEZ - Formateur Code, IT & Gaming
+// // 11:30
+// // // Appliquer l'image de fond
+
+
+// Attendre que la page soit chargée
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Éléments du DOM
+    const villeInput = document.getElementById('ville');
+    const rechercherButton = document.getElementById('rechercher');
+    const chargementDiv = document.getElementById('chargement');
+    const erreurDiv = document.getElementById('erreur');
+    const meteoDiv = document.getElementById('meteo');
+    const nomVilleElement = document.getElementById('nomVille');
+    const temperatureElement = document.getElementById('temperature');
+    const descriptionElement = document.getElementById('description');
+    const ressentiElement = document.getElementById('ressenti');
+    const humiditeElement = document.getElementById('humidite');
+    const ventElement = document.getElementById('vent');
+    const iconElement = document.getElementById('icon');
+    const footerElement = document.getElementById('footer');
+
+    // Clé API (normalement, elle devrait être sécurisée côté serveur)
+    // Utilisez votre propre clé en vous inscrivant sur OpenWeatherMap
+    const API_KEY = "1dd47aed5606521d9f956f53d0d149fd"; // Remplacez par votre clé
+
+    function definirArrierePlan(conditionCode, heure) {
+        const backgroundImage = getWeatherBackground(conditionCode, heure);
+
+        document.body.style.backgroundImage = `url('${backgroundImage})`;
+
+        const meteoJour = determinerTypeMeteo(conditionCode);
+        footerElement.textContent = `conditions actuelles : ${meteoJour}`;
+    }
+
+    function determinerTypeMeteo(conditionCode) {
+        if (conditionCode >= 200 && conditionCode < 300) return "Orages";
+        if (conditionCode >= 300 && conditionCode < 400) return "Bruine";
+        if (conditionCode >= 500 && conditionCode < 600) return "Pluie";
+        if (conditionCode >= 600 && conditionCode < 700) return "Neige";
+        if (conditionCode >= 700 && conditionCode < 800) return "Conditions atmosphériques";
+        if (conditionCode === 800) return "Ciel dégagé";
+        if (conditionCode > 800 && conditionCode < 900) return "Nuageux";
+        return "Conditions inconnues";
+    }
+
+
+    //Fonction afficher message d'erreur
+    function afficherErreur(message) {
+        erreurDiv.textContent = message;
+        erreurDiv.style.display = 'block';
+        meteoDiv.style.display = 'none';
+        chargementDiv.style.display = 'none';
+    }
+
+    //Fonction pour récupérer et afficher la météo
+
+    async function recupereMeteo(ville) {
+        //Réinitialiser l'affichage
+        erreurDiv.style.display = 'none';
+        meteoDiv.style.display = 'none';
+        chargementDiv.style.display = 'block';
+
+        try {
+            //Construire l'URL de l'API avec la ville et la clé
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${ville}&appid=${API_KEY}&units=metric&lang=fr`;
+
+            console.log(`Récupération de la météo pour: ${ville}`);
+
+            //Faire la requête API
+            const response = await fetch(url);
+
+            //vérifier si la requête a réussi
+            if (!response.ok) {
+                //Si le status est 404, la ville n'a pas été trouvée
+                if (response.status === 404) {
+                    throw new Error(`La ville "${ville}" n'a pas été trouvée.`);
+                } else {
+                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                }
+            }
+            //Convertir la reponse en JSON
+            const donnees = await response.json();
+            console.log("Données météo reçues", donnees);
+
+            //Mettre à jour l'interface avec les données reçues
+            nomVilleElement.textContent = donnees.name;
+            temperatureElement.textContent = `${Math.round(donnees.main.temp)}°C`;
+
+            // Première lettre en majuscule pour la description
+            const description = donnees.weather[0].description;
+            descriptionElement.textContent = description.charAt(0).toUpperCase() + description.slice(1);
+
+
+            ressentiElement.textContent = `${Math.round(donnees.main.feels_like)}°C`;
+            humiditeElement.textContent = `${donnees.main.humidity}%`;
+            ventElement.textContent = `${Math.round(donnees.wind.speed * 3.6)} km/h`; // Conversion de m/s en km/h
+
+            //Ajouter l'icone météo
+            const weatherIcon = donnees.weather[0].icon;
+            iconElement.innerHTML = `<img src="https://openweathermap.org/img/wn/${weatherIcon}@2x.png" alt="${description}">`;
+
+
+            // Définir l'arrière-plan en fonction de la météo
+            // Obtenir l'heure locale de l'utilisateur pour déterminer jour/nuit
+            const heureLocale = new Date().getHours();
+            definirArrierePlan(donnees.weather[0].id, heureLocale);
+
+            //afficher le bloc météo
+            meteoDiv.style.display = ' block';
+            chargementDiv.style.display = 'none';
+
+        } catch {
+            console.error("Erreur lors de la récupération de la météo:", erreur);
+            afficherErreur(erreur.message);
+        }
+    }
+
+    //Gérer le click sur le bouton de recherche
+    rechercherButton.addEventListener('click', function () {
+        const ville = villeInput.value.trim();
+
+        if (ville === '') {
+            afficherErreur('Veuillez entrer le nom d\'une ville.');
+            return;
+        }
+        recupereMeteo(ville);
+    });
+
+    // Gérer l'appui sur Entrée dans le champ de recherche
+    villeInput.addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            rechercherButton.click();
+        }
+    });
+
+    // Charger la météo de Lille par défaut (si le champ n'est pas vide)
+    if (villeInput.value.trim() === '') {
+        recupereMeteo(villeInput.value.trim());
+    }
+
+});

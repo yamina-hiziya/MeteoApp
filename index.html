@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./asset/css/index.css">
+    <title>Météo APP</title>
+</head>
+
+<body>
+
+    <h1> Application météo</h1>
+    <div class="container">
+
+        <div class="recherche">
+            <input type="text" id="ville" placeholder="Entrez le nom d'une ville" value="Paris">
+            <button id="rechercher">Rechercher</button>
+        </div>
+
+        <div class="chargement" id="chargement">
+            Récupération de la météo...
+        </div>
+
+        <div class="erreur" id="erreur"></div>
+
+        <div class="meteo" id="meteo">
+            <h2 id="nomVille"></h2>
+            <div id="icon" class="icon"></div>
+            <div class="temperature" id="temperature">--°C</div>
+            <div id="description"></div>
+        </div>
+
+        <div class="details">
+            <div class="detail">
+                <div>Ressenti</div>
+                <div id="ressenti">--°C</div>
+            </div>
+
+            <div class="detail">
+                <div>Humidité</div>
+                <div id="humidite">--%</div>
+            </div>
+
+            <div class="detail">
+                <div>Vent</div>
+                <div id="vent">--Km/h</div>
+            </div>
+        </div>
+        <div class="forecast">
+            <h3>Prévisions</h3>
+            <div class="forecast-container" id="forecastContainer">
+                <div class="forecast-day" id="forecastDay">
+                    <div class="forecast-day-name">sam.</div>
+                    <div class="forecast-icon">${weatherIcon}</div>
+                    <div class="forecast-temp">--°C</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer" id="footer"></div>
+
+    <script src="./asset/js/app.js"></script>
+    <script src="./asset/js/weatherBG.js"></script>
+</body>
+
+</html>
